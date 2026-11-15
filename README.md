@@ -13,8 +13,12 @@ registered. So in Teams, Zoom, Meet and other apps, you still pick **Lumina Came
 
 ## Run
 
-Start Menu or Desktop: **Lumina Lite**. Installed in `%LOCALAPPDATA%\LuminaLite`.
-Settings are saved to `%APPDATA%\LuminaLite\settings.json`.
+Start Menu or Desktop: **Lumina Lite**, or `Lumina Lite.exe` in
+`%USERPROFILE%\LuminaLite`. Settings are saved to `settings.json` next to the app.
+
+If the status line says "No frames from camera", another app has the camera
+open, often Teams with "Lumina Camera - Raw" selected. In video apps, choose
+"Lumina Camera - Plus" instead.
 
 Keep the window open (it can be minimised) while you're in a call. When the app
 is closed, Lumina Camera - Plus shows the "Lumina is starting" placeholder.
@@ -57,8 +61,8 @@ The original LuminaStudioApp must not be running at the same time. Lumina Lite
 closes it on startup.
 
 Lumina Lite starts minimised at login from `Lumina Lite.lnk` in the Startup
-folder (`app.py --minimized`). The original installer's `Lumina.lnk` was moved
-out of Startup to `%LOCALAPPDATA%\LuminaLite\Lumina.lnk.original-startup`.
+folder (`Lumina Lite.exe --minimized`). The original installer's `Lumina.lnk`
+was moved out of Startup to `%USERPROFILE%\LuminaLite\Lumina.lnk.original-startup`.
 
 ## Install or update
 
@@ -69,7 +73,13 @@ Needs [uv](https://docs.astral.sh/uv/) and the original Lumina software
 powershell -ExecutionPolicy Bypass -File .\install.ps1 -Startup
 ```
 
-This copies the app to `%LOCALAPPDATA%\LuminaLite`, builds its venv there and
-creates Start Menu and Desktop shortcuts. `-Startup` also starts it minimised at
-login. The venv is kept on a short path because MediaPipe fails to load its DLL
-when the path is longer than 260 characters.
+This copies the app to `%USERPROFILE%\LuminaLite`, builds its venv and
+`Lumina Lite.exe` there, and creates Start Menu and Desktop shortcuts to the exe.
+`-Startup` also starts it minimised at login. The venv is kept on a short path
+because MediaPipe fails to load its DLL when the path is longer than 260
+characters.
+
+The install avoids `%LOCALAPPDATA%` on purpose. When the installer runs from a
+packaged Windows app (for example the Claude desktop app), Windows redirects
+writes under AppData into that app's private storage, so Explorer can't see the
+files and the shortcuts break.

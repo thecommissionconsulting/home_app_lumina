@@ -16,7 +16,9 @@ from PIL import Image, ImageTk
 
 from pipeline import BACKGROUNDS, Pipeline, Settings, list_cameras
 
-CONFIG_DIR = os.path.join(os.environ.get("APPDATA", "."), "LuminaLite")
+# Settings live next to the app, not in %APPDATA%: AppData writes from a packaged
+# (MSIX) parent process are redirected, which would split settings in two.
+CONFIG_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG = os.path.join(CONFIG_DIR, "settings.json")
 OUTPUTS = {"720p": (1280, 720), "1080p": (1920, 1080), "4K": (3840, 2160)}
 

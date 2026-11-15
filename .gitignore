@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+settings.json
+*.exe
+*.ico
