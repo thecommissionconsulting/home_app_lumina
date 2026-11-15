@@ -14,6 +14,20 @@ from vcam import LuminaVCam
 LUMINA_DIR = r"C:\Program Files\Lumina"
 BACKGROUNDS = ["Desert", "Forest", "Lake", "Nebula", "Stars"]
 
+# Camera (UVC) values the original Lumina app pushed to the camera at startup,
+# from its default profile (~/.config/Lumina/profileConfig.json). Without them
+# the camera runs its own defaults, notably backlight compensation 10, which
+# over-brightens the whole frame and washes it out.
+LUMINA_TUNING = {
+    cv2.CAP_PROP_BACKLIGHT: 4,
+    cv2.CAP_PROP_BRIGHTNESS: 10,
+    cv2.CAP_PROP_GAIN: 10,
+    cv2.CAP_PROP_HUE: 8,
+    cv2.CAP_PROP_CONTRAST: 32,
+    cv2.CAP_PROP_SATURATION: 64,
+    cv2.CAP_PROP_SHARPNESS: 4,
+}
+
 
 @dataclass
 class Settings:
@@ -34,12 +48,14 @@ class Settings:
     contrast: float = 1.0           # 0.5..1.5
     saturation: float = 1.0         # 0..2
     warmth: int = 0                 # -30..30
+    camera_tuning: bool = True      # push LUMINA_TUNING to the camera when the app starts
 
     # Tuned for Teams/Zoom/Meet: they send at most 1080p, mirror only your own
     # self-view (so the outgoing feed must not be mirrored), and compress hard,
     # so effects stay subtle and framing moves slowly.
     CALL_PRESET = {
         "capture": "1080p",         # 4K + effects only reaches ~21 fps on this laptop CPU
+        "camera_tuning": True,
         "out_w": 1920, "out_h": 1080,
         "mirror": False,
         "autoframe": True, "frame_tightness": 0.4, "frame_speed": 0.25,
@@ -139,6 +155,8 @@ class Pipeline:
         self._mask = None
         self._crop = None           # smoothed (cx, cy, w) in source pixels
         self._bg_cache = {}
+        self._tuned = False         # tuning applied once per run, so changes made in
+                                    # the hardware settings dialog are kept
         self.vcam = None
 
     # ----- lifecycle -----
@@ -192,7 +210,17 @@ class Pipeline:
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, h)
         cap.set(cv2.CAP_PROP_FPS, 30)
         cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        if cap.isOpened() and self.s.camera_tuning and not self._tuned:
+            # Reading these back through MSMF returns stale values, but the
+            # writes do reach the camera.
+            for prop, val in LUMINA_TUNING.items():
+                cap.set(prop, val)
+            self._tuned = True
         return cap
+
+    def retune_camera(self):
+        self._tuned = False
+        self._reopen.set()
 
     def _run(self):
         try:
@@ -238,7 +266,7 @@ class Pipeline:
             if self.vcam:
                 self.vcam.send(out)
                 self.in_use = self.vcam.consumer_active()
-            prev = cv2.resize(out, (640, 360), interpolation=cv2.INTER_AREA)
+            prev = cv2.resize(out, (960, 540), interpolation=cv2.INTER_AREA)
             with self.lock:
                 self.preview = prev
             frames += 1

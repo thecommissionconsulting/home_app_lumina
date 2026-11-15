@@ -23,7 +23,7 @@ OUTPUTS = {"720p": (1280, 720), "1080p": (1920, 1080), "4K": (3840, 2160)}
 
 def load_settings():
     try:
-        with open(CONFIG, encoding="utf-8") as f:
+        with open(CONFIG, encoding="utf-8-sig") as f:  # tolerate a BOM from hand edits
             return Settings.from_dict(json.load(f))
     except Exception:
         return Settings()
@@ -129,6 +129,9 @@ class App:
         self.out_var.trace_add("write", self._set_output)
         ttk.Combobox(row, values=list(OUTPUTS), state="readonly", width=8, textvariable=self.out_var).pack(side="left")
         ttk.Checkbutton(cam, text="Mirror", variable=self._var(tk.BooleanVar, "mirror")).pack(anchor="w")
+        ttk.Checkbutton(cam, text="Lumina camera tuning (exposure, colour)",
+                        variable=self._var(tk.BooleanVar, "camera_tuning",
+                                           lambda: self.s.camera_tuning and self.pipe.retune_camera())).pack(anchor="w")
         ttk.Button(cam, text="Hardware settings (exposure, focus, WB)...",
                    command=lambda: self.pipe.open_hw_settings()).pack(fill="x", pady=(4, 0))
 

@@ -21,6 +21,13 @@ is closed, Lumina Camera - Plus shows the "Lumina is starting" placeholder.
 
 ## Features
 
+- Lumina camera tuning (on by default): when the app starts it sends the camera
+  the values the original Lumina app used (backlight compensation 4,
+  brightness 10, gain 10, hue 8). The camera's own defaults include backlight
+  compensation 10, which washes the whole picture out. Changes you make in the
+  hardware settings dialog are kept until the app restarts.
+- 4K capture with 1080p output gives the sharpest picture when effects are off.
+
 - "Apply video call preset" button: 1080p, not mirrored, slow auto-framing,
   light background blur, slightly warmer colour with a little extra contrast
   and saturation. Holds 30 fps on this laptop. Video apps mirror only your own
